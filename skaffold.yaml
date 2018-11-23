@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/svilenvul/demo-vertx-project:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/svilenvul/demo-vertx-project:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: demo-vertx-project
+        chartPath: charts/demo-vertx-project
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/svilenvul/demo-vertx-project"
+          image.tag: "{{.DIGEST_HEX}}"
